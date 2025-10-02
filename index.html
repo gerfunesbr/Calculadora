@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Adubação - Pimentão</title>
+  
+  <!-- PWA Meta Tags -->
+  <meta name="theme-color" content="#2e7d32">
+  <meta name="description" content="Calculadora profissional para adubação de pimentão">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icons/icon-72x72.png">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #2e7d32;
+      --primary-light: #4caf50;
+      --text: #333;
+      --light-gray: #f5f5f5;
+      --border: #ddd;
+      --white: #fff;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.5;
+      color: var(--text);
+      background-color: var(--light-gray);
+      padding: 16px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    
+    .subtitle {
+      color: #666;
+      font-size: 0.9rem;
+    }
+    
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    
+    .control-panel {
+      background: var(--white);
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-size: 1rem;
+      margin-bottom: 12px;
+    }
+    
+    .etapa-info {
+      font-size: 0.85rem;
+      color: #666;
+      padding: 8px;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+    }
+    
+    .results-container {
+      background: var(--white);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    
+    th {
+      background-color: var(--primary);
+      color: var(--white);
+      padding: 10px 8px;
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    td {
+      padding: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    
+    .total-results {
+      background-color: var(--primary-light);
+      color: var(--white);
+      padding: 12px;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    .formula-section {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+    }
+    
+    .formula-section h3 {
+      font-size: 1rem;
+      margin-bottom: 10px;
+      color: var(--primary);
+    }
+    
+    .formula {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      margin-bottom: 6px;
+      padding: 4px 0;
+    }
+    
+    .chart-container {
+      padding: 16px;
+      border-top: 1px solid var(--border);
+      height: 300px;
+    }
+    
+    .chart-container h3 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      color: var(--primary);
+    }
+    
+    #chart {
+      width: 100% !important;
+      height: 250px !important;
+    }
+    
+    footer {
+      text-align: center;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      color: #666;
+      font-size: 0.8rem;
+    }
+    
+    .install-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 4px;
+      margin-top: 10px;
+      cursor: pointer;
+      display: none;
+    }
+    
+    @media (min-width: 768px) {
+      .main-container {
+        flex-direction: row;
+      }
+      
+      .control-panel {
+        flex: 1;
+        max-width: 300px;
+      }
+      
+      .results-container {
+        flex: 2;
+      }
+      
+      h1 {
+        font-size: 1.75rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 12px;
+      }
+      
+      th, td {
+        padding: 6px 4px;
+      }
+      
+      table {
+        font-size: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Calculadora de Adubação para Pimentão</h1>
+    <p class="subtitle">Cálculo preciso para diferentes etapas do cultivo</p>
+    <button id="installBtn" class="install-btn">Instalar App</button>
+  </header>
+  
+  <div class="main-container">
+    <div class="control-panel">
+      <label for="etapaSelect">Etapa de Adubação:</label>
+      <select id="etapaSelect" onchange="updateCalculations()">
+        <option value="Primeiro">Primeiro - Adubação Inicial</option>
+        <option value="Segundo">Segundo - Fertilização</option>
+        <option value="Terceiro">Terceiro - Aplicação de Nitrato</option>
+        <option value="Quarto">Quarto - Suplementação de Magnésio</option>
+        <option value="Quinto">Quinto - Reforço de Nitrato</option>
+        <option value="Sexto">Sexto - Estimulante de Crescimento</option>
+        <option value="Sétimo">Sétimo - Potássio Final</option>
+      </select>
+      
+      <div class="etapa-info" id="etapaInfo">
+        Selecione uma etapa para ver informações.
+      </div>
+    </div>
+    
+    <div class="results-container">
+      <table id="lotesTable">
+        <thead>
+          <tr>
+            <th>Setor</th>
+            <th>Mudas</th>
+            <th>Adubo</th>
+            <th>Por Muda</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Tabela será preenchida dinamicamente -->
+        </tbody>
+      </table>
+      
+      <div class="total-results" id="totalResult">
+        <!-- Resultados totais serão exibidos aqui -->
+      </div>
+      
+      <div class="formula-section" id="formulaSection">
+        <h3>Fórmulas de Cálculo</h3>
+        <!-- Fórmulas serão exibidas aqui -->
+      </div>
+      
+      <div class="chart-container">
+        <h3>Distribuição por Setor</h3>
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <p>Calculadora de Adubação para Pimentão &copy; 2023</p>
+  </footer>
+
+  <script>
+    // Service Worker Registration
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+          .then((registration) => {
+            console.log('Service Worker registrado com sucesso:', registration);
+          })
+          .catch((error) => {
+            console.log('Falha ao registrar Service Worker:', error);
+          });
+      });
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt;
+    const installBtn = document.getElementById('installBtn');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'block';
+    });
+
+    installBtn.addEventListener('click', () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('Usuário aceitou a instalação');
+            installBtn.style.display = 'none';
+          }
+          deferredPrompt = null;
+        });
+      }
+    });
+
+    // App Data and Logic
+    const setores = {
+      'Setor 5': 1964,
+      'Setor 4': 2675,
+      'Setor 3': 3150,
+      'Setor 2': 3812,
+      'Setor 1': 3811
+    };
+
+    const adubacaoEtapas = {
+      'Primeiro': [
+        { 
+          tipo: 'MAP', 
+          peso: 0.8, 
+          unidade: 'g',
+          descricao: 'Fosfato monoamônico - fornece fósforo e nitrogênio para o desenvolvimento inicial'
+        }
+      ],
+      'Segundo': [
+        { 
+          tipo: 'Fertimax Humi', 
+          volume: 0.3, 
+          unidade: 'ml',
+          descricao: 'Fertilizante orgânico com ácidos húmicos - melhora a estrutura do solo'
+        },
+        { 
+          tipo: 'Krista K', 
+          peso: 0.8, 
+          unidade: 'g',
+          descricao: 'Fonte de potássio solúvel - essencial para o desenvolvimento vegetativo'
+        }
+      ],
+      'Terceiro': [
+        { 
+          tipo: 'Calcinit', 
+          peso: 3, 
+          unidade: 'g',
+          descricao: 'Nitrato de cálcio - fornece cálcio e nitrogênio nítrico para crescimento'
+        }
+      ],
+      'Quarto': [
+        { 
+          tipo: 'Sulfato de Magnésio', 
+          peso: 3, 
+          unidade: 'g',
+          descricao: 'Fonte de magnésio e enxofre - importante para a fotossíntese'
+        }
+      ],
+      'Quinto': [
+        { 
+          tipo: 'Calcinit', 
+          peso: 3, 
+          unidade: 'g',
+          descricao: 'Reforço de nitrato de cálcio - mantém o crescimento equilibrado'
+        }
+      ],
+      'Sexto': [
+        { 
+          tipo: 'Start', 
+          volume: 0.3, 
+          unidade: 'ml',
+          descricao: 'Estimulante de crescimento - promove desenvolvimento radicular e vegetativo'
+        }
+      ],
+      'Sétimo': [
+        { 
+          tipo: 'Krista K', 
+          peso: 0.9, 
+          unidade: 'g',
+          descricao: 'Potássio final - importante para a qualidade dos frutos'
+        }
+      ]
+    };
+
+    const etapaDescricoes = {
+      'Primeiro': 'Adubação inicial para preparação do solo e desenvolvimento radicular.',
+      'Segundo': 'Fertilização para estimular o crescimento vegetativo das plantas.',
+      'Terceiro': 'Aplicação de nitrato para fortalecer o desenvolvimento foliar.',
+      'Quarto': 'Suplementação de magnésio para melhorar a fotossíntese.',
+      'Quinto': 'Reforço de nitrato para manter o crescimento equilibrado.',
+      'Sexto': 'Aplicação de estimulante para desenvolvimento radicular e vegetativo.',
+      'Sétimo': 'Adubação final com potássio para melhorar a qualidade dos frutos.'
+    };
+
+    const table = document.getElementById('lotesTable').getElementsByTagName('tbody')[0];
+    const totalResult = document.getElementById('totalResult');
+    const formulaSection = document.getElementById('formulaSection');
+    const etapaInfo = document.getElementById('etapaInfo');
+    let chartInstance;
+
+    function updateCalculations() {
+      const etapaSelecionada = document.getElementById('etapaSelect').value;
+      const adubos = adubacaoEtapas[etapaSelecionada];
+      
+      // Atualizar informações da etapa
+      etapaInfo.textContent = etapaDescricoes[etapaSelecionada];
+      
+      // Limpar tabela
+      table.innerHTML = '';
+      formulaSection.innerHTML = '<h3>Fórmulas de Cálculo</h3>';
+      
+      let totalMudas = 0;
+      let totalPeso = 0;
+      let totalVolume = 0;
+      
+      // Calcular para cada setor
+      for (const [setor, mudas] of Object.entries(setores)) {
+        totalMudas += mudas;
+        
+        adubos.forEach(adubo => {
+          const quantidadePorMuda = adubo.peso || adubo.volume || 0;
+          const quantidadeTotal = mudas * quantidadePorMuda;
+          
+          if (adubo.peso) {
+            totalPeso += quantidadeTotal;
+          } else if (adubo.volume) {
+            totalVolume += quantidadeTotal;
+          }
+          
+          // Adicionar linha na tabela
+          const row = table.insertRow();
+          row.insertCell(0).innerText = setor;
+          row.insertCell(1).innerText = mudas.toLocaleString('pt-BR');
+          row.insertCell(2).innerText = adubo.tipo;
+          row.insertCell(3).innerText = `${quantidadePorMuda.toFixed(1)} ${adubo.unidade}`;
+          row.insertCell(4).innerText = `${quantidadeTotal.toFixed(2)} ${adubo.unidade}`;
+          
+          // Adicionar fórmula
+          const formulaText = `${setor}: ${mudas.toLocaleString('pt-BR')} × ${quantidadePorMuda.toFixed(1)} ${adubo.unidade} = ${quantidadeTotal.toFixed(2)} ${adubo.unidade}`;
+          const formulaDiv = document.createElement('div');
+          formulaDiv.className = 'formula';
+          formulaDiv.innerText = formulaText;
+          formulaSection.appendChild(formulaDiv);
+        });
+      }
+      
+      // Atualizar resultados totais
+      let resultadoTexto = `Total de Mudas: ${totalMudas.toLocaleString('pt-BR')}`;
+      if (totalPeso > 0) {
+        resultadoTexto += ` | Peso Total: ${totalPeso.toFixed(2)}g`;
+      }
+      if (totalVolume > 0) {
+        resultadoTexto += ` | Volume Total: ${totalVolume.toFixed(2)}ml`;
+      }
+      totalResult.innerText = resultadoTexto;
+      
+      // Atualizar gráfico
+      updateChart(etapaSelecionada);
+    }
+
+    function updateChart(etapaSelecionada) {
+      const adubos = adubacaoEtapas[etapaSelecionada];
+      const ctx = document.getElementById('chart').getContext('2d');
+      
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+      
+      // Preparar dados para o gráfico
+      const labels = Object.keys(setores);
+      const datasets = [];
+      
+      // Para cada tipo de adubo, criar um dataset
+      adubos.forEach((adubo, index) => {
+        const cores = ['#4caf50', '#ff9800', '#2196f3', '#9c27b0', '#f44336'];
+        const data = Object.values(setores).map(mudas => {
+          const quantidadePorMuda = adubo.peso || adubo.volume || 0;
+          return mudas * quantidadePorMuda;
+        });
+        
+        datasets.push({
+          label: `${adubo.tipo} (${adubo.unidade})`,
+          data: data,
+          backgroundColor: cores[index % cores.length],
+          borderColor: cores[index % cores.length],
+          borderWidth: 1
+        });
+      });
+      
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: `Distribuição - ${etapaSelecionada}`
+            }
+          }
+        }
+      });
+    }
+
+    // Inicializar ao carregar
+    document.addEventListener('DOMContentLoaded', function() {
+      updateCalculations();
+    });
+  </script>
+</body>
+</html>
