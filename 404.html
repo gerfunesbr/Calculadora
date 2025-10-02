@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Redirecting...</title>
+    <script>
+        // Redireciona para a página correta
+        const repoName = 'calculadora-adubacao-pimentao'; // Substitua pelo nome do seu repositório
+        const currentPath = window.location.pathname;
+        
+        if (!currentPath.includes(repoName)) {
+            window.location.href = `/${repoName}/`;
+        }
+    </script>
+</head>
+<body>
+    <p>Redirecting to application...</p>
+</body>
+</html>
