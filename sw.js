@@ -1,6 +1,5 @@
 const CACHE_NAME = 'calc-adubacao-v1';
-// Substitua 'calculadora-adubacao-pimentao' pelo nome exato do seu repositório
-const APP_PREFIX = '/calculadora-adubacao-pimentao';
+const APP_PREFIX = '/Calculadora';
 
 const urlsToCache = [
   `${APP_PREFIX}/`,
@@ -23,15 +22,37 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Só intercepta requisições do mesmo domínio
+  // Só processa requisições do mesmo origin
   if (event.request.url.startsWith(self.location.origin)) {
     event.respondWith(
       caches.match(event.request)
         .then((response) => {
+          // Retorna do cache se encontrou
           if (response) {
             return response;
           }
-          return fetch(event.request);
+          
+          // Clona a requisição porque ela só pode ser usada uma vez
+          const fetchRequest = event.request.clone();
+          
+          return fetch(fetchRequest).then(
+            (response) => {
+              // Checa se é uma resposta válida
+              if(!response || response.status !== 200 || response.type !== 'basic') {
+                return response;
+              }
+              
+              // Clona a resposta porque ela só pode ser usada uma vez
+              const responseToCache = response.clone();
+              
+              caches.open(CACHE_NAME)
+                .then((cache) => {
+                  cache.put(event.request, responseToCache);
+                });
+              
+              return response;
+            }
+          );
         })
     );
   }
