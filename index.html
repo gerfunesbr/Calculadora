@@ -4,14 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calculadora de Adubação - Pimentão</title>
-  
+
   <!-- PWA Meta Tags -->
   <meta name="theme-color" content="#2e7d32">
   <meta name="description" content="Calculadora profissional para adubação de pimentão">
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" type="image/png" href="./icons/icon-72x72.png">
   <link rel="apple-touch-icon" href="./icons/icon-192x192.png">
-  
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -21,55 +21,96 @@
       --light-gray: #f5f5f5;
       --border: #ddd;
       --white: #fff;
+      --background: #f5f5f5;
+      --card-bg: #fff;
+      --footer-bg: transparent;
     }
-    
+
+    /* Modo Noturno */
+    [data-theme="dark"] {
+      --primary: #4caf50;
+      --primary-light: #66bb6a;
+      --text: #e0e0e0;
+      --light-gray: #121212;
+      --border: #444;
+      --white: #1e1e1e;
+      --background: #121212;
+      --card-bg: #1e1e1e;
+      --footer-bg: #1a1a1a;
+    }
+
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
-    
+
     body {
       font-family: 'Segoe UI', system-ui, sans-serif;
       line-height: 1.5;
       color: var(--text);
-      background-color: var(--light-gray);
+      background-color: var(--background);
       padding: 16px;
       max-width: 1200px;
       margin: 0 auto;
+      transition: all 0.3s ease;
     }
-    
+
     header {
       text-align: center;
       margin-bottom: 24px;
       padding-bottom: 16px;
       border-bottom: 1px solid var(--border);
+      position: relative;
     }
-    
+
     h1 {
       font-size: 1.5rem;
       color: var(--primary);
       margin-bottom: 4px;
     }
-    
+
     .subtitle {
-      color: #666;
+      color: var(--text);
+      opacity: 0.8;
       font-size: 0.9rem;
     }
-    
+
+    .theme-toggle {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      background: var(--primary-light);
+    }
+
     .main-container {
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
-    
+
     .control-panel {
-      background: var(--white);
+      background: var(--card-bg);
       padding: 16px;
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      transition: all 0.3s ease;
     }
-    
+
     select {
       width: 100%;
       padding: 10px;
@@ -77,98 +118,112 @@
       border-radius: 4px;
       font-size: 1rem;
       margin-bottom: 12px;
+      background: var(--card-bg);
+      color: var(--text);
+      transition: all 0.3s ease;
     }
-    
+
     .etapa-info {
       font-size: 0.85rem;
-      color: #666;
+      color: var(--text);
+      opacity: 0.8;
       padding: 8px;
-      background-color: #f9f9f9;
+      background-color: var(--light-gray);
       border-radius: 4px;
+      transition: all 0.3s ease;
     }
-    
+
     .results-container {
-      background: var(--white);
+      background: var(--card-bg);
       border-radius: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.1);
       overflow: hidden;
+      transition: all 0.3s ease;
     }
-    
+
     table {
       width: 100%;
       border-collapse: collapse;
       font-size: 0.85rem;
     }
-    
+
     th {
       background-color: var(--primary);
-      color: var(--white);
+      color: white;
       padding: 10px 8px;
       text-align: left;
       font-weight: 500;
     }
-    
+
     td {
       padding: 8px;
       border-bottom: 1px solid var(--border);
+      transition: all 0.3s ease;
     }
-    
+
     tr:nth-child(even) {
-      background-color: #f9f9f9;
+      background-color: var(--light-gray);
     }
-    
+
     .total-results {
       background-color: var(--primary-light);
-      color: var(--white);
+      color: white;
       padding: 12px;
       text-align: center;
       font-weight: 500;
     }
-    
+
     .formula-section {
       padding: 16px;
       border-top: 1px solid var(--border);
+      transition: all 0.3s ease;
     }
-    
+
     .formula-section h3 {
       font-size: 1rem;
       margin-bottom: 10px;
       color: var(--primary);
     }
-    
+
     .formula {
       font-family: 'Courier New', monospace;
       font-size: 0.8rem;
       margin-bottom: 6px;
       padding: 4px 0;
+      color: var(--text);
+      transition: all 0.3s ease;
     }
-    
+
     .chart-container {
       padding: 16px;
       border-top: 1px solid var(--border);
       height: 300px;
+      transition: all 0.3s ease;
     }
-    
+
     .chart-container h3 {
       font-size: 1rem;
       margin-bottom: 12px;
       color: var(--primary);
     }
-    
+
     #chart {
       width: 100% !important;
       height: 250px !important;
     }
-    
+
     footer {
       text-align: center;
       margin-top: 24px;
-      padding-top: 16px;
+      padding: 16px;
       border-top: 1px solid var(--border);
-      color: #666;
+      color: var(--text);
       font-size: 0.8rem;
+      background-color: var(--footer-bg);
+      border-radius: 8px;
+      transition: all 0.3s ease;
     }
-    
+
     .install-btn {
       background: var(--primary);
       color: white;
@@ -178,38 +233,48 @@
       margin-top: 10px;
       cursor: pointer;
       display: none;
+      transition: all 0.3s ease;
     }
-    
+
+    .install-btn:hover {
+      background: var(--primary-light);
+    }
+
     @media (min-width: 768px) {
       .main-container {
         flex-direction: row;
       }
-      
+
       .control-panel {
         flex: 1;
         max-width: 300px;
       }
-      
+
       .results-container {
         flex: 2;
       }
-      
+
       h1 {
         font-size: 1.75rem;
       }
     }
-    
+
     @media (max-width: 480px) {
       body {
         padding: 12px;
       }
-      
+
       th, td {
         padding: 6px 4px;
       }
-      
+
       table {
         font-size: 0.75rem;
+      }
+
+      .theme-toggle {
+        position: relative;
+        margin-top: 10px;
       }
     }
   </style>
@@ -219,8 +284,12 @@
     <h1>Calculadora de Adubação para Pimentão</h1>
     <p class="subtitle">Cálculo preciso para diferentes etapas do cultivo</p>
     <button id="installBtn" class="install-btn">Instalar App</button>
+    <button id="themeToggle" class="theme-toggle">
+      <span id="themeIcon">🌙</span>
+      <span id="themeText">Modo Escuro</span>
+    </button>
   </header>
-  
+
   <div class="main-container">
     <div class="control-panel">
       <label for="etapaSelect">Etapa de Adubação:</label>
@@ -233,12 +302,12 @@
         <option value="Sexto">Sexto - Estimulante de Crescimento</option>
         <option value="Sétimo">Sétimo - Potássio Final</option>
       </select>
-      
+
       <div class="etapa-info" id="etapaInfo">
         Selecione uma etapa para ver informações.
       </div>
     </div>
-    
+
     <div class="results-container">
       <table id="lotesTable">
         <thead>
@@ -254,40 +323,40 @@
           <!-- Tabela será preenchida dinamicamente -->
         </tbody>
       </table>
-      
+
       <div class="total-results" id="totalResult">
         <!-- Resultados totais serão exibidos aqui -->
       </div>
-      
+
       <div class="formula-section" id="formulaSection">
         <h3>Fórmulas de Cálculo</h3>
         <!-- Fórmulas serão exibidas aqui -->
       </div>
-      
+
       <div class="chart-container">
         <h3>Distribuição por Setor</h3>
         <canvas id="chart"></canvas>
       </div>
     </div>
   </div>
-  
+
   <footer>
     <p>Calculadora de Adubação para Pimentão &copy; 2023</p>
   </footer>
 
   <script>
     // Service Worker Registration
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/Calculadora/sw.js')
-      .then((registration) => {
-        console.log('Service Worker registrado com sucesso:', registration);
-      })
-      .catch((error) => {
-        console.log('Falha ao registrar Service Worker:', error);
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/Calculadora/sw.js')
+          .then((registration) => {
+            console.log('Service Worker registrado com sucesso:', registration);
+          })
+          .catch((error) => {
+            console.log('Falha ao registrar Service Worker:', error);
+          });
       });
-  });
-}
+    }
 
     // PWA Install Prompt
     let deferredPrompt;
@@ -312,6 +381,46 @@ if ('serviceWorker' in navigator) {
       }
     });
 
+    // Sistema de Tema
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.getElementById('themeIcon');
+    const themeText = document.getElementById('themeText');
+
+    // Verificar preferência salva ou do sistema
+    function loadTheme() {
+      const savedTheme = localStorage.getItem('theme') || 
+                        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+      
+      document.documentElement.setAttribute('data-theme', savedTheme);
+      updateThemeButton(savedTheme);
+    }
+
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+      updateThemeButton(newTheme);
+      
+      // Atualizar gráfico para o novo tema
+      if (chartInstance) {
+        updateChart(document.getElementById('etapaSelect').value);
+      }
+    }
+
+    function updateThemeButton(theme) {
+      if (theme === 'dark') {
+        themeIcon.textContent = '☀️';
+        themeText.textContent = 'Modo Claro';
+      } else {
+        themeIcon.textContent = '🌙';
+        themeText.textContent = 'Modo Escuro';
+      }
+    }
+
+    themeToggle.addEventListener('click', toggleTheme);
+
     // App Data and Logic
     const setores = {
       'Setor 5': 1964,
@@ -335,7 +444,7 @@ if ('serviceWorker' in navigator) {
           tipo: 'Fertimax Humi', 
           volume: 0.3, 
           unidade: 'ml',
-          descricao: 'Fertilizante orgânico com ácidos húmicos - melhora a estrutura do solo'
+          descricao: 'Fertilizante orgânico com ácidos húmicos - melhora a estrutura do solo (300ml/1000 mudas)'
         },
         { 
           tipo: 'Krista K', 
@@ -373,7 +482,7 @@ if ('serviceWorker' in navigator) {
           tipo: 'Start', 
           volume: 0.3, 
           unidade: 'ml',
-          descricao: 'Estimulante de crescimento - promove desenvolvimento radicular e vegetativo'
+          descricao: 'Estimulante de crescimento - promove desenvolvimento radicular e vegetativo (300ml/1000 mudas)'
         }
       ],
       'Sétimo': [
@@ -388,11 +497,11 @@ if ('serviceWorker' in navigator) {
 
     const etapaDescricoes = {
       'Primeiro': 'Adubação inicial para preparação do solo e desenvolvimento radicular.',
-      'Segundo': 'Fertilização para estimular o crescimento vegetativo das plantas.',
+      'Segundo': 'Fertilização para estimular o crescimento vegetativo das plantas. Fertimax Humi: 300ml para cada 1000 mudas.',
       'Terceiro': 'Aplicação de nitrato para fortalecer o desenvolvimento foliar.',
       'Quarto': 'Suplementação de magnésio para melhorar a fotossíntese.',
       'Quinto': 'Reforço de nitrato para manter o crescimento equilibrado.',
-      'Sexto': 'Aplicação de estimulante para desenvolvimento radicular e vegetativo.',
+      'Sexto': 'Aplicação de estimulante para desenvolvimento radicular e vegetativo. Start: 300ml para cada 1000 mudas.',
       'Sétimo': 'Adubação final com potássio para melhorar a qualidade dos frutos.'
     };
 
@@ -402,35 +511,53 @@ if ('serviceWorker' in navigator) {
     const etapaInfo = document.getElementById('etapaInfo');
     let chartInstance;
 
+    // Função para calcular quantidade por muda baseada na proporção 300ml/1000 mudas
+    function calcularQuantidadePorMuda(adubo, mudas) {
+      if (adubo.volume !== undefined) {
+        // Para volumes: 300ml para cada 1000 mudas = 0.3ml por muda
+        return 0.3; // ml por muda
+      } else if (adubo.peso !== undefined) {
+        // Para pesos: usa o valor direto em gramas
+        return adubo.peso;
+      }
+      return 0;
+    }
+
+    // Função para calcular quantidade total
+    function calcularQuantidadeTotal(adubo, mudas) {
+      const quantidadePorMuda = calcularQuantidadePorMuda(adubo, mudas);
+      return mudas * quantidadePorMuda;
+    }
+
     function updateCalculations() {
       const etapaSelecionada = document.getElementById('etapaSelect').value;
       const adubos = adubacaoEtapas[etapaSelecionada];
-      
+
       // Atualizar informações da etapa
       etapaInfo.textContent = etapaDescricoes[etapaSelecionada];
-      
+
       // Limpar tabela
       table.innerHTML = '';
       formulaSection.innerHTML = '<h3>Fórmulas de Cálculo</h3>';
-      
+
       let totalMudas = 0;
       let totalPeso = 0;
       let totalVolume = 0;
-      
+
       // Calcular para cada setor
       for (const [setor, mudas] of Object.entries(setores)) {
         totalMudas += mudas;
-        
+
         adubos.forEach(adubo => {
-          const quantidadePorMuda = adubo.peso || adubo.volume || 0;
-          const quantidadeTotal = mudas * quantidadePorMuda;
-          
-          if (adubo.peso) {
+          const quantidadePorMuda = calcularQuantidadePorMuda(adubo, mudas);
+          const quantidadeTotal = calcularQuantidadeTotal(adubo, mudas);
+
+          if (adubo.peso !== undefined) {
             totalPeso += quantidadeTotal;
-          } else if (adubo.volume) {
+          } else if (adubo.volume !== undefined) {
             totalVolume += quantidadeTotal;
           }
-          
+
           // Adicionar linha na tabela
           const row = table.insertRow();
           row.insertCell(0).innerText = setor;
@@ -438,16 +565,22 @@ if ('serviceWorker' in navigator) {
           row.insertCell(2).innerText = adubo.tipo;
           row.insertCell(3).innerText = `${quantidadePorMuda.toFixed(1)} ${adubo.unidade}`;
           row.insertCell(4).innerText = `${quantidadeTotal.toFixed(2)} ${adubo.unidade}`;
-          
+
           // Adicionar fórmula
-          const formulaText = `${setor}: ${mudas.toLocaleString('pt-BR')} × ${quantidadePorMuda.toFixed(1)} ${adubo.unidade} = ${quantidadeTotal.toFixed(2)} ${adubo.unidade}`;
+          let formulaText;
+          if (adubo.volume !== undefined) {
+            formulaText = `${setor}: ${mudas.toLocaleString('pt-BR')} mudas × 0.3 ml/muda = ${quantidadeTotal.toFixed(2)} ml`;
+          } else {
+            formulaText = `${setor}: ${mudas.toLocaleString('pt-BR')} × ${quantidadePorMuda.toFixed(1)} ${adubo.unidade} = ${quantidadeTotal.toFixed(2)} ${adubo.unidade}`;
+          }
+          
           const formulaDiv = document.createElement('div');
           formulaDiv.className = 'formula';
           formulaDiv.innerText = formulaText;
           formulaSection.appendChild(formulaDiv);
         });
       }
-      
+
       // Atualizar resultados totais
       let resultadoTexto = `Total de Mudas: ${totalMudas.toLocaleString('pt-BR')}`;
       if (totalPeso > 0) {
@@ -455,9 +588,13 @@ if ('serviceWorker' in navigator) {
       }
       if (totalVolume > 0) {
         resultadoTexto += ` | Volume Total: ${totalVolume.toFixed(2)}ml`;
+        
+        // Adicionar informação sobre a proporção
+        const proporcaoMl = (totalVolume / totalMudas * 1000).toFixed(1);
+        resultadoTexto += ` (${proporcaoMl}ml/1000 mudas)`;
       }
       totalResult.innerText = resultadoTexto;
-      
+
       // Atualizar gráfico
       updateChart(etapaSelecionada);
     }
@@ -465,23 +602,22 @@ if ('serviceWorker' in navigator) {
     function updateChart(etapaSelecionada) {
       const adubos = adubacaoEtapas[etapaSelecionada];
       const ctx = document.getElementById('chart').getContext('2d');
-      
+
       if (chartInstance) {
         chartInstance.destroy();
       }
-      
+
       // Preparar dados para o gráfico
       const labels = Object.keys(setores);
       const datasets = [];
-      
+
       // Para cada tipo de adubo, criar um dataset
       adubos.forEach((adubo, index) => {
         const cores = ['#4caf50', '#ff9800', '#2196f3', '#9c27b0', '#f44336'];
         const data = Object.values(setores).map(mudas => {
-          const quantidadePorMuda = adubo.peso || adubo.volume || 0;
-          return mudas * quantidadePorMuda;
+          return calcularQuantidadeTotal(adubo, mudas);
         });
-        
+
         datasets.push({
           label: `${adubo.tipo} (${adubo.unidade})`,
           data: data,
@@ -490,7 +626,7 @@ if ('serviceWorker' in navigator) {
           borderWidth: 1
         });
       });
-      
+
       chartInstance = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -502,16 +638,34 @@ if ('serviceWorker' in navigator) {
           maintainAspectRatio: false,
           scales: {
             y: {
-              beginAtZero: true
+              beginAtZero: true,
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text')
+              },
+              grid: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+              }
+            },
+            x: {
+              ticks: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text')
+              },
+              grid: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--border')
+              }
             }
           },
           plugins: {
             legend: {
               position: 'top',
+              labels: {
+                color: getComputedStyle(document.documentElement).getPropertyValue('--text')
+              }
             },
             title: {
               display: true,
-              text: `Distribuição - ${etapaSelecionada}`
+              text: `Distribuição - ${etapaSelecionada}`,
+              color: getComputedStyle(document.documentElement).getPropertyValue('--text')
             }
           }
         }
@@ -520,6 +674,7 @@ if ('serviceWorker' in navigator) {
 
     // Inicializar ao carregar
     document.addEventListener('DOMContentLoaded', function() {
+      loadTheme();
       updateCalculations();
     });
   </script>
