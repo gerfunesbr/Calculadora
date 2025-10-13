@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cronograma de Rega - Pimentões</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #e8f5e9;
+            color: #2e2e2e;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+            max-width: 500px;
+            width: 100%;
+            border: 2px solid #4caf50;
+        }
+        h1 {
+            text-align: center;
+            color: #2e7d32;
+            font-size: 28px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .checklist {
+            margin-top: 20px;
+        }
+        .checklist h3 {
+            color: #388e3c;
+            font-size: 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .checklist label {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            font-size: 16px;
+            background-color: #f1f8e9;
+            padding: 10px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+        .checklist label:hover {
+            background-color: #e8f5e9;
+        }
+        .checklist input[type="checkbox"] {
+            margin-right: 12px;
+            transform: scale(1.2);
+        }
+        .timer {
+            display: inline-block;
+            margin-left: 15px;
+            font-weight: bold;
+            color: #d32f2f;
+            font-size: 16px;
+        }
+        button {
+            padding: 8px 15px;
+            margin-left: 15px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover:not(:disabled) {
+            background-color: #388e3c;
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            .checklist label {
+                font-size: 14px;
+                padding: 8px;
+            }
+            button {
+                padding: 6px 12px;
+                font-size: 13px;
+            }
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌶️ Cronograma de Rega - Pimentões</h1>
+        <p><strong>Data:</strong> 13 de Outubro de 2025</p>
+        <p><strong>Frequência:</strong> 1 vez por dia</p>
+        <p><strong>Duração por setor:</strong> 20 minutos</p>
+        <p><strong>Setores:</strong> 5</p>
+
+        <div class="checklist">
+            <h3>Rega Diária</h3>
+            <label><input type="checkbox" id="sector1" disabled> Setor 1 <button onclick="startTimer('sector1', 1200)">Iniciar</button><span id="timer-sector1" class="timer"></span></label>
+            <label><input type="checkbox" id="sector2" disabled> Setor 2 <button onclick="startTimer('sector2', 1200)">Iniciar</button><span id="timer-sector2" class="timer"></span></label>
+            <label><input type="checkbox" id="sector3" disabled> Setor 3 <button onclick="startTimer('sector3', 1200)">Iniciar</button><span id="timer-sector3" class="timer"></span></label>
+            <label><input type="checkbox" id="sector4" disabled> Setor 4 <button onclick="startTimer('sector4', 1200)">Iniciar</button><span id="timer-sector4" class="timer"></span></label>
+            <label><input type="checkbox" id="sector5" disabled> Setor 5 <button onclick="startTimer('sector5', 1200)">Iniciar</button><span id="timer-sector5" class="timer"></span></label>
+        </div>
+    </div>
+
+    <script>
+        // Carregar estados salvos do localStorage
+        window.onload = function() {
+            const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = localStorage.getItem(checkbox.id) === 'true';
+                checkbox.disabled = !checkbox.checked; // Desativa se já marcado
+            });
+        };
+
+        // Função para iniciar o temporizador
+        function startTimer(checkboxId, duration) {
+            const checkbox = document.getElementById(checkboxId);
+            const timerDisplay = document.getElementById(`timer-${checkboxId}`);
+            const button = timerDisplay.previousElementSibling;
+
+            if (checkbox.checked) return; // Não inicia se já regado
+
+            let timeLeft = duration;
+            button.disabled = true;
+            timerDisplay.textContent = formatTime(timeLeft);
+
+            const interval = setInterval(() => {
+                timeLeft--;
+                timerDisplay.textContent = formatTime(timeLeft);
+
+                if (timeLeft <= 0) {
+                    clearInterval(interval);
+                    timerDisplay.textContent = 'Concluído!';
+                    checkbox.disabled = false; // Habilita o checkbox
+                    button.disabled = true; // Mantém botão desativado
+                    playSound(); // Toca som ao finalizar
+                }
+            }, 1000);
+
+            // Salvar estado do checkbox ao marcar
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    localStorage.setItem(checkboxId, 'true');
+                    checkbox.disabled = true; // Desativa após marcar
+                }
+            });
+        }
+
+        // Formatar tempo em minutos e segundos
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+        }
+
+        // Tocar som ao finalizar o timer
+        function playSound() {
+            const context = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = context.createOscillator();
+            const gainNode = context.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(context.destination);
+
+            oscillator.type = 'sine'; // Tipo de som (seno para um beep suave)
+            oscillator.frequency.setValueAtTime(440, context.currentTime); // Frequência (440Hz = nota A)
+            gainNode.gain.setValueAtTime(0.5, context.currentTime); // Volume
+
+            oscillator.start();
+            oscillator.stop(context.currentTime + 0.5); // Som de 0.5 segundos
+        }
+    </script>
+</body>
+</html>
