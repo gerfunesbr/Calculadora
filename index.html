@@ -396,17 +396,45 @@
     <button onclick="window.location.href='https://gerfunesbr.github.io/Calculadora/molha.html'">Molhar</button>
   </div>
 
-  <script>
+<script>
     // Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/Calculadora/sw.js')
           .then((registration) => {
             console.log('Service Worker registrado com sucesso:', registration);
+            
+            // Verifica se há uma nova versão do Service Worker
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              console.log('Nova versão do Service Worker encontrada!');
+              
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('Nova versão pronta! Recarregue para atualizar.');
+                  // Aqui você pode mostrar um botão para o usuário atualizar
+                }
+              });
+            });
           })
           .catch((error) => {
             console.log('Falha ao registrar Service Worker:', error);
           });
+
+        // Ouvinte para quando o Service Worker estiver pronto
+        navigator.serviceWorker.ready.then(() => {
+          console.log('Aplicação pronta para funcionar offline!');
+        });
+      });
+
+      // Ouvinte para recarregar quando novo Service Worker assumir controle
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          console.log('Novo Service Worker ativo! Recarregando...');
+          window.location.reload();
+        }
       });
     }
 
@@ -690,6 +718,15 @@
     document.addEventListener('DOMContentLoaded', function() {
       loadTheme();
       updateCalculations();
+      
+      // Verificar se está online/offline
+      window.addEventListener('online', () => {
+        console.log('Aplicação online');
+      });
+      
+      window.addEventListener('offline', () => {
+        console.log('Aplicação offline - funcionando com cache');
+      });
     });
   </script>
 </body>
