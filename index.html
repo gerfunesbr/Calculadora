@@ -348,7 +348,6 @@
         <option value="Quarto">Quarto - Suplementação de Magnésio</option>
         <option value="Quinto">Quinto - Reforço de Nitrato</option>
         <option value="Sexto">Sexto - Estimulante de Crescimento</option>
-        <option value="Sétimo">Sétimo - Potássio Final</option>
       </select>
 
       <div class="etapa-info" id="etapaInfo">
@@ -394,8 +393,7 @@
 
   <!-- Barra Inferior -->
   <div class="bottom-bar">
-    <button onclick="window.location.href='rega_pimentao.html'">Molhar</button>
-    <button onclick="window.location.href='https://example.com'">Outro Link</button>
+    <button onclick="window.location.href='https://gerfunesbr.github.io/Calculadora/molha.html'">Molhar</button>
   </div>
 
   <script>
@@ -484,25 +482,20 @@
       'Setor 1': 3811
     };
 
+    // DADOS ATUALIZADOS CONFORME SOLICITADO
     const adubacaoEtapas = {
       'Primeiro': [
         { 
           tipo: 'MAP', 
-          peso: 0.8, 
+          peso: 1.0, 
           unidade: 'g',
           descricao: 'Fosfato monoamônico - fornece fósforo e nitrogênio para o desenvolvimento inicial'
         }
       ],
       'Segundo': [
         { 
-          tipo: 'Fertimax Humi', 
-          volume: 0.3, 
-          unidade: 'ml',
-          descricao: 'Fertilizante orgânico com ácidos húmicos - melhora a estrutura do solo (300ml/1000 mudas)'
-        },
-        { 
           tipo: 'Krista K', 
-          peso: 0.8, 
+          peso: 0.9, 
           unidade: 'g',
           descricao: 'Fonte de potássio solúvel - essencial para o desenvolvimento vegetativo'
         }
@@ -510,7 +503,7 @@
       'Terceiro': [
         { 
           tipo: 'Calcinit', 
-          peso: 3, 
+          peso: 4, 
           unidade: 'g',
           descricao: 'Nitrato de cálcio - fornece cálcio e nitrogênio nítrico para crescimento'
         }
@@ -526,20 +519,12 @@
       'Quinto': [
         { 
           tipo: 'Calcinit', 
-          peso: 3, 
+          peso: 4, 
           unidade: 'g',
           descricao: 'Reforço de nitrato de cálcio - mantém o crescimento equilibrado'
         }
       ],
       'Sexto': [
-        { 
-          tipo: 'Start', 
-          volume: 0.3, 
-          unidade: 'ml',
-          descricao: 'Estimulante de crescimento - promove desenvolvimento radicular e vegetativo (300ml/1000 mudas)'
-        }
-      ],
-      'Sétimo': [
         { 
           tipo: 'Krista K', 
           peso: 0.9, 
@@ -550,13 +535,12 @@
     };
 
     const etapaDescricoes = {
-      'Primeiro': 'Adubação inicial para preparação do solo e desenvolvimento radicular.',
-      'Segundo': 'Fertilização para estimular o crescimento vegetativo das plantas. Fertimax Humi: 300ml para cada 1000 mudas.',
-      'Terceiro': 'Aplicação de nitrato para fortalecer o desenvolvimento foliar.',
-      'Quarto': 'Suplementação de magnésio para melhorar a fotossíntese.',
-      'Quinto': 'Reforço de nitrato para manter o crescimento equilibrado.',
-      'Sexto': 'Aplicação de estimulante para desenvolvimento radicular e vegetativo. Start: 300ml para cada 1000 mudas.',
-      'Sétimo': 'Adubação final com potássio para melhorar a qualidade dos frutos.'
+      'Primeiro': 'Adubação inicial com MAP - 1g por muda para preparação do solo e desenvolvimento radicular.',
+      'Segundo': 'Fertilização com Krista K - 0.9g por muda para estimular o crescimento vegetativo.',
+      'Terceiro': 'Aplicação de Calcinit - 4g por muda para fortalecer o desenvolvimento foliar.',
+      'Quarto': 'Suplementação de Sulfato de Magnésio - 3g por muda para melhorar a fotossíntese.',
+      'Quinto': 'Reforço de Calcinit - 4g por muda para manter o crescimento equilibrado.',
+      'Sexto': 'Aplicação final de Krista K - 0.9g por muda para melhorar a qualidade dos frutos.'
     };
 
     const table = document.getElementById('lotesTable').getElementsByTagName('tbody')[0];
@@ -565,21 +549,14 @@
     const etapaInfo = document.getElementById('etapaInfo');
     let chartInstance;
 
-    // Função para calcular quantidade por muda baseada na proporção 300ml/1000 mudas
-    function calcularQuantidadePorMuda(adubo, mudas) {
-      if (adubo.volume !== undefined) {
-        // Para volumes: 300ml para cada 1000 mudas = 0.3ml por muda
-        return 0.3; // ml por muda
-      } else if (adubo.peso !== undefined) {
-        // Para pesos: usa o valor direto em gramas
-        return adubo.peso;
-      }
-      return 0;
+    // Função para calcular quantidade por muda
+    function calcularQuantidadePorMuda(adubo) {
+      return adubo.peso;
     }
 
     // Função para calcular quantidade total
     function calcularQuantidadeTotal(adubo, mudas) {
-      const quantidadePorMuda = calcularQuantidadePorMuda(adubo, mudas);
+      const quantidadePorMuda = calcularQuantidadePorMuda(adubo);
       return mudas * quantidadePorMuda;
     }
 
@@ -596,21 +573,16 @@
 
       let totalMudas = 0;
       let totalPeso = 0;
-      let totalVolume = 0;
 
       // Calcular para cada setor
       for (const [setor, mudas] of Object.entries(setores)) {
         totalMudas += mudas;
 
         adubos.forEach(adubo => {
-          const quantidadePorMuda = calcularQuantidadePorMuda(adubo, mudas);
+          const quantidadePorMuda = calcularQuantidadePorMuda(adubo);
           const quantidadeTotal = calcularQuantidadeTotal(adubo, mudas);
 
-          if (adubo.peso !== undefined) {
-            totalPeso += quantidadeTotal;
-          } else if (adubo.volume !== undefined) {
-            totalVolume += quantidadeTotal;
-          }
+          totalPeso += quantidadeTotal;
 
           // Adicionar linha na tabela
           const row = table.insertRow();
@@ -621,12 +593,7 @@
           row.insertCell(4).innerText = `${quantidadeTotal.toFixed(2)} ${adubo.unidade}`;
 
           // Adicionar fórmula
-          let formulaText;
-          if (adubo.volume !== undefined) {
-            formulaText = `${setor}: ${mudas.toLocaleString('pt-BR')} mudas × 0.3 ml/muda = ${quantidadeTotal.toFixed(2)} ml`;
-          } else {
-            formulaText = `${setor}: ${mudas.toLocaleString('pt-BR')} × ${quantidadePorMuda.toFixed(1)} ${adubo.unidade} = ${quantidadeTotal.toFixed(2)} ${adubo.unidade}`;
-          }
+          const formulaText = `${setor}: ${mudas.toLocaleString('pt-BR')} mudas × ${quantidadePorMuda.toFixed(1)} ${adubo.unidade}/muda = ${quantidadeTotal.toFixed(2)} ${adubo.unidade}`;
 
           const formulaDiv = document.createElement('div');
           formulaDiv.className = 'formula';
@@ -639,13 +606,6 @@
       let resultadoTexto = `Total de Mudas: ${totalMudas.toLocaleString('pt-BR')}`;
       if (totalPeso > 0) {
         resultadoTexto += ` | Peso Total: ${totalPeso.toFixed(2)}g`;
-      }
-      if (totalVolume > 0) {
-        resultadoTexto += ` | Volume Total: ${totalVolume.toFixed(2)}ml`;
-
-        // Adicionar informação sobre a proporção
-        const proporcaoMl = (totalVolume / totalMudas * 1000).toFixed(1);
-        resultadoTexto += ` (${proporcaoMl}ml/1000 mudas)`;
       }
       totalResult.innerText = resultadoTexto;
 
